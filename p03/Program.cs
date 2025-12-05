@@ -2,7 +2,6 @@
 
 Console.WriteLine(lines.Sum(x => Joltage(x, 2)));
 Console.WriteLine(lines.Sum(x => Joltage(x, 12)));
-Console.WriteLine(Power(2, 0));
 
 long Joltage(int[] numbers, int count)
 {

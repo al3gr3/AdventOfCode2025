@@ -1,61 +1,51 @@
-﻿var lines = File.ReadAllText("TextFile1.txt").Split(',');
+﻿var ranges = File.ReadAllText("TextFile1.txt").Split(',').Select(x => Range.Parse(x)).ToArray();
 
-SolveA(lines);
-SolveB(lines);
+SolveA(ranges);
+SolveB(ranges);
 
-void SolveB(string[] lines)
+void SolveB(Range[] ranges)
 {
-    var pairs = lines.Select(x => x.Split('-', StringSplitOptions.RemoveEmptyEntries)
-        .Select(long.Parse))
-        .Select(a => new Pair
-        {
-            Start = a.First(),
-            End = a.Last()
-        }).ToArray();
-
-    var max = pairs.Max(x => x.End);
+    var max = ranges.Max(x => x.End);
 
     var halfLen = Math.Max(max.ToString().Length / 2, 1);
     var halfmax = long.Parse(max.ToString()[0..halfLen]);
 
-    var res = 0L;
     var found = new HashSet<long>();
     for (long i = 1; i <= halfmax; i++)
     {
-        var check = i.ToString() + i;
-        while (long.Parse(check) <= max)
+        var check = $"{i}{i}"; // 2 repeats
+        while (true)
         {
-            var parseCheck = long.Parse(check); 
-            var add = pairs.Count(p => p.Contains(parseCheck)) * parseCheck;
+            var parseCheck = long.Parse(check);
+            if (parseCheck > max)
+                break;
+            
+            var add = ranges.Count(p => p.Contains(parseCheck)) * parseCheck;
             if (add > 0 && !found.Contains(parseCheck))
-            {
                 found.Add(parseCheck);
-                res += add;
-            }
-            check += i;
+
+            check += i; // 3 repeats, etc
         }
     }
 
-    Console.WriteLine(res);
+    Console.WriteLine(found.Sum());
 }
 
-static void SolveA(string[] lines)
+static void SolveA(Range[] ranges)
 {
     var res = 0L;
 
-    foreach (var line in lines)
+    foreach (var range in ranges)
     {
-        var splits = line.Split('-', StringSplitOptions.RemoveEmptyEntries);
-
-        var halfLen = Math.Max(splits[0].Length / 2, 1);
-        var cur = long.Parse(splits.First()[0..halfLen]);
+        var halfLen = Math.Max(range.Start.ToString().Length / 2, 1);
+        var cur = long.Parse(range.Start.ToString()[0..halfLen]);
         do
         {
-            var check = long.Parse(cur.ToString() + cur.ToString());
+            var check = long.Parse($"{cur}{cur}");
 
-            if (check >= long.Parse(splits[0]) && check <= long.Parse(splits[1]))
+            if (range.Contains(check))
                 res += check;
-            else if (check > long.Parse(splits[1]))
+            else if (check > range.End)
                 break;
 
             cur++;
@@ -64,13 +54,20 @@ static void SolveA(string[] lines)
     Console.WriteLine(res);
 }
 
-internal class Pair
+internal class Range
 {
     public long Start;
     public long End;
 
-    public bool Contains(long l)
+    public static Range Parse(string s)
     {
-        return Start <= l && l <= End;
+        var splits = s.Split('-').Select(long.Parse).ToArray();
+        return new Range
+        {
+            Start = splits[0],
+            End = splits[1]
+        };
     }
+
+    public bool Contains(long l) => Start <= l && l <= End;
 }

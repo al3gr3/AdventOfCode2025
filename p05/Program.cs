@@ -1,12 +1,13 @@
 ﻿var lines = File.ReadAllLines("TextFile1.txt");
 
-SolveA(lines);
-SolveB(lines);
+var ranges = lines.TakeWhile(x => !string.IsNullOrWhiteSpace(x)).Select(x => Range.Parse(x)).ToList();
+var points = lines.Skip(ranges.Count + 1).Select(long.Parse).ToList();
 
-void SolveB(string[] lines)
+SolveA(ranges, points);
+SolveB(ranges);
+
+static void SolveB(List<Range> ranges)
 {
-    var ranges = lines.TakeWhile(x => !string.IsNullOrWhiteSpace(x)).Select(x => Range.Parse(x)).ToList();
-
     start:
     for (var i = 0; i < ranges.Count; i++)
     {
@@ -26,11 +27,8 @@ void SolveB(string[] lines)
     Console.WriteLine(ranges.Sum(r => r.Length()));
 }
 
-static void SolveA(string[] lines)
+static void SolveA(List<Range> ranges, List<long> points)
 {
-    var ranges = lines.TakeWhile(x => !string.IsNullOrWhiteSpace(x)).Select(x => Range.Parse(x)).ToList();
-    var points = lines.Skip(ranges.Count + 1).Select(long.Parse).ToList();
-
     var res = points.Count(p => ranges.Any(r => r.Contains(p)));
     Console.WriteLine(res);
 }
@@ -52,7 +50,7 @@ internal class Range
 
     public static Range Parse(string s)
     {
-        var splits = s.Split('-', StringSplitOptions.RemoveEmptyEntries)
+        var splits = s.Split('-')
             .Select(long.Parse).ToArray();
         return new Range
         {

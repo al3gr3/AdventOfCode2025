@@ -11,9 +11,8 @@
     new Point { Y = -1, X = -1 },
 };
 
-(bool, string[], int) Once(string[] lines)
+(string[], int) Once(string[] lines)
 {
-    var isChanged = false;
     var result = 0;
     var newLines = new List<string>();
     for (int y = 0; y < lines.Length; y++)
@@ -23,9 +22,9 @@
             if (lines[y][x] == '@')
             {
                 var count = 0;
+                var pos = new Point { X = x, Y = y };
                 foreach (var dir in directions)
                 {
-                    var pos = new Point { X = x, Y = y };
                     var test = pos.AddClone(dir);
                     if (test.X >= 0 && test.X < lines[0].Length && test.Y >= 0 && test.Y < lines.Length)
                         if (lines[test.Y][test.X] == '@')
@@ -35,16 +34,15 @@
                 {
                     result++;
                     newLine += '.';
-                    isChanged = true;
                 }
                 else
-                    newLine += '@';
+                    newLine += lines[y][x];
             }
             else
                 newLine += lines[y][x];
         newLines.Add(newLine);
     }
-    return (isChanged, newLines.ToArray(), result);
+    return (newLines.ToArray(), result);
 }
 
 var lines = File.ReadAllLines("TextFile1.txt");
@@ -54,13 +52,14 @@ SolveB(lines);
 
 void SolveB(string[] lines)
 {
-    var isChanged = true;
     var result = 0;
-    while (isChanged)
+    while (true)
     {
-        int add;
-        (isChanged, lines, add) = Once(lines);
+        var (newLines, add) = Once(lines);
+        if (add == 0)
+            break;
         result += add;
+        lines = newLines;
     }
 
     Console.WriteLine(result);
@@ -68,7 +67,7 @@ void SolveB(string[] lines)
 
 void SolveA(string[] lines)
 {
-    var (_, _, result) = Once(lines);
+    var (_, result) = Once(lines);
     Console.WriteLine(result);
 }
 
