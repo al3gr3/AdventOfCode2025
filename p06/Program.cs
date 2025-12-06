@@ -23,19 +23,10 @@ List<List<long>> SolveA() => lines[..(lines.Length - 1)]
 
 public static class Extensions
 {
-    public static List<List<T>> Transpose<T>(this List<List<T>> numbers)
-    {
-        var result = new List<List<T>>();
-
-        for (int j = 0; j < numbers.First().Count; j++)
-        {
-            var newRow = new List<T>();
-            for (int i = 0; i < numbers.Count; i++)
-                newRow.Add(numbers[i][j]);
-            result.Add(newRow);
-        }
-        return result;
-    }
+    public static List<List<T>> Transpose<T>(this List<List<T>> numbers) =>
+        Enumerable.Range(0, numbers.First().Count).Select(j =>
+            Enumerable.Range(0, numbers.Count).Select(i => numbers[i][j]).ToList()
+        ).ToList();
 
     public static List<List<T>> GroupWithDelimiter<T>(this IEnumerable<T> numbers, Func<T, bool> isDelimiter)
     {
