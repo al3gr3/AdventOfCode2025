@@ -7,7 +7,7 @@ SolveB();
 void SolveB()
 {
     var temp = lines[..(lines.Length - 1)].Select(line => line.ToList()).ToList();
-    temp = Transform(temp);
+    temp = Transpose(temp);
     var allNumbers = temp.Select(x => new string(x.ToArray()).Trim()).ToList();
 
     var result = 0L;
@@ -27,13 +27,13 @@ long AddOrMultiply(string v, List<long> numbers) => v == "+"
 void SolveA()
 {
     var numbers = lines[..(lines.Length - 1)].Select(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToList()).ToList();
-    numbers = Transform(numbers);
+    numbers = Transpose(numbers);
 
     var result = actions.Zip(numbers).Sum(z => AddOrMultiply(z.First, z.Second));
     Console.WriteLine(result);
 }
 
-static List<List<T>> Transform<T>(List<List<T>> numbers) 
+static List<List<T>> Transpose<T>(List<List<T>> numbers) 
 {
     var result = new List<List<T>>();
 
