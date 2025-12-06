@@ -14,7 +14,7 @@ void SolveB()
     for (int i = 0; i < actions.Count; i++)
     {
         var numbers = allNumbers.TakeWhile(x => !string.IsNullOrWhiteSpace(x)).Select(long.Parse).ToList();
-        allNumbers = allNumbers.SkipWhile(x => !string.IsNullOrWhiteSpace(x)).Skip(1).ToList();
+        allNumbers = allNumbers.Skip(allNumbers.Count + 1).ToList();
         result += AddOrMultiply(actions[i], numbers);
     }
     Console.WriteLine(result);
