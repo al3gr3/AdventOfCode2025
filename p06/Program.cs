@@ -6,15 +6,14 @@ SolveB();
 
 void SolveB()
 {
-    var temp = lines[..(lines.Length - 1)].Select(line => line.ToList()).ToList();
-    temp = Transpose(temp);
+    var temp = lines[..(lines.Length - 1)].Select(line => line.ToList()).ToList().Transpose();
     var allNumbers = temp.Select(x => new string(x.ToArray()).Trim()).ToList();
 
     var result = 0L;
     for (int i = 0; i < actions.Count; i++)
     {
         var numbers = allNumbers.TakeWhile(x => !string.IsNullOrWhiteSpace(x)).Select(long.Parse).ToList();
-        allNumbers = allNumbers.Skip(allNumbers.Count + 1).ToList();
+        allNumbers = allNumbers.Skip(numbers.Count + 1).ToList();
         result += AddOrMultiply(actions[i], numbers);
     }
     Console.WriteLine(result);
@@ -26,23 +25,27 @@ long AddOrMultiply(string v, List<long> numbers) => v == "+"
 
 void SolveA()
 {
-    var numbers = lines[..(lines.Length - 1)].Select(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToList()).ToList();
-    numbers = Transpose(numbers);
+    var numbers = lines[..(lines.Length - 1)]
+        .Select(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToList())
+        .ToList().Transpose();
 
     var result = actions.Zip(numbers).Sum(z => AddOrMultiply(z.First, z.Second));
     Console.WriteLine(result);
 }
 
-static List<List<T>> Transpose<T>(List<List<T>> numbers) 
+public static class Extensions
 {
-    var result = new List<List<T>>();
-
-    for (int j = 0; j < numbers.First().Count; j++)
+    public static List<List<T>> Transpose<T>(this List<List<T>> numbers)
     {
-        var newRow = new List<T>();
-        for (int i = 0; i < numbers.Count; i++)
-            newRow.Add(numbers[i][j]);
-        result.Add(newRow);
+        var result = new List<List<T>>();
+
+        for (int j = 0; j < numbers.First().Count; j++)
+        {
+            var newRow = new List<T>();
+            for (int i = 0; i < numbers.Count; i++)
+                newRow.Add(numbers[i][j]);
+            result.Add(newRow);
+        }
+        return result;
     }
-    return result;
 }
