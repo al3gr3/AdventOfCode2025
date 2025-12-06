@@ -13,7 +13,6 @@ List<List<long>> SolveB() => lines[..(lines.Length - 1)]
     .GroupWithDelimiter(x => string.IsNullOrWhiteSpace(x))
     .Select(grp => grp.Select(long.Parse).ToList()).ToList();
 
-
 long AddOrMultiply(string v, List<long> numbers) => v == "+"
     ? numbers.Sum()
     : numbers.Aggregate(1L, (a, b) => a * b);
