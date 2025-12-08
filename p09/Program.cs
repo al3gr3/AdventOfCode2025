@@ -1,0 +1,1 @@
+﻿var boxes = File.ReadAllLines("TextFile1.txt");
