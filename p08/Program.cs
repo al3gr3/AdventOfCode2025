@@ -6,8 +6,8 @@ var circuits = boxes.Select(x => new[] { x }.ToList()).ToList();
 var count = 0;
 foreach (var nextC in connections)
 {
-    var circuitFrom = circuits.First(c => c.Any(p => p.IsEqual(nextC.From)));
-    var circuitTo = circuits.First(c => c.Any(p => p.IsEqual(nextC.To)));
+    var circuitFrom = circuits.First(c => c.Contains(nextC.From));
+    var circuitTo = circuits.First(c => c.Contains(nextC.To));
     if (circuitFrom != circuitTo)
     {
         circuitFrom.AddRange(circuitTo);
@@ -15,14 +15,11 @@ foreach (var nextC in connections)
     }
 
     if (++count == 1000)
-    {
-        var res = circuits.Select(circuit => circuit.Count).OrderByDescending(x => x).Take(3).Aggregate(1L, (a, b) => a * b);
-        Console.WriteLine(res);
-    }
+        Console.WriteLine(circuits.Select(circuit => circuit.Count).OrderByDescending(x => x).Take(3).Aggregate(1L, (a, b) => a * b));
 
     if (circuits.Count == 1)
     {
-        Console.WriteLine(nextC.From.X * nextC.To.X);
+        Console.WriteLine(nextC.From.Coords[0] * nextC.To.Coords[0]);
         break;
     }
 }
@@ -40,36 +37,17 @@ IEnumerable<Connection> GetAllConnections()
 
 public class Connection
 {
-    public Point From;
-    public Point To;
+    public Point From, To;
 
-    public bool IsEqual(Connection other) =>
-        (From.IsEqual(other.From) && To.IsEqual(other.To)) ||
-        (From.IsEqual(other.To) && To.IsEqual(other.From));
-
-    public long Length() => From.DistanceTo(To);
+    public long Length() => From.Coords.Zip(To.Coords).Sum(z => (z.First - z.Second) * (z.First - z.Second));
 }
 
 public class Point
 {
-    public long X;
-    public long Y;
-    public long Z;
+    public long[] Coords;
 
-    public static Point Parse(string s)
+    public static Point Parse(string s) => new Point
     {
-        var parts = s.Split(',');
-        return new Point
-        {
-            X = long.Parse(parts[0]),
-            Y = long.Parse(parts[1]),
-            Z = long.Parse(parts[2]),
-        };
-    }
-
-    public long DistanceTo(Point other) =>
-        (X - other.X) * (X - other.X) + (Y - other.Y) * (Y - other.Y) + (Z - other.Z) * (Z - other.Z);
-
-    public bool IsEqual(Point other) =>
-        X == other.X && Y == other.Y && Z == other.Z;
+        Coords = s.Split(',').Select(long.Parse).ToArray()
+    };
 }
