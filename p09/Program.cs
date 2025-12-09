@@ -5,11 +5,10 @@ var rectangles = GetAllRectangles().OrderByDescending(x => x.Area()).ToList();
 Console.WriteLine(rectangles.First().Area());
 
 reds.Add(reds.First());
-var sides = reds.Zip(reds.Skip(1)).Select(z => new Rectange { A = z.First, B = z.Second }).ToList();
+var sides = reds.Zip(reds.Skip(1)).Select(z => new Rectangle { A = z.First, B = z.Second }).ToList();
 
-// todo: also have to raycast and make sure the inside of the rect is green,
-// otherwise I give incorrect result 32 for this input:
-/*
+/*todo: also have to raycast and make sure the inside of the rect is green,
+otherwise I give incorrect Problem B result 32 for this input:
 7,1
 11,1
 11,8
@@ -21,28 +20,33 @@ var sides = reds.Zip(reds.Skip(1)).Select(z => new Rectange { A = z.First, B = z
 */
 Console.WriteLine(rectangles.First(rect => !sides.Any(side => rect.Intersects(side))).Area());
 
-IEnumerable<Rectange> GetAllRectangles()
+IEnumerable<Rectangle> GetAllRectangles()
 {
     for (int i = 0; i < reds.Count; i++)
         for (int j = i + 1; j < reds.Count; j++)
-            yield return new Rectange
+            yield return new Rectangle
             {
                 A = reds[i],
                 B = reds[j],
             };
 }
 
-public class Rectange
+public class Rectangle
 {
     public Point A, B;
+
+    public long Left => Math.Min(A.X, B.X);
+    public long Right => Math.Max(A.X, B.X);
+    public long Top => Math.Min(A.Y, B.Y);
+    public long Bottom => Math.Max(A.Y, B.Y);
 
     public long Area() => (Math.Abs(A.X - B.X) + 1) * (Math.Abs(A.Y - B.Y) + 1);
 
     public bool Contains(Point p) => 
-        Math.Min(A.X, B.X) < p.X && p.X < Math.Max(A.X, B.X) &&
-        Math.Min(A.Y, B.Y) < p.Y && p.Y < Math.Max(A.Y, B.Y);
+        Left < p.X && p.X < Right &&
+        Top < p.Y && p.Y < Bottom;
 
-    internal bool Intersects(Rectange side)
+    internal bool Intersects(Rectangle side)
     {
         if (this.Contains(side.A) || this.Contains(side.B))
             return true;
@@ -50,15 +54,17 @@ public class Rectange
         if (side.A.X == side.B.X)
         {
             // side is vertical
-            return Math.Min(side.A.Y, side.B.Y) <= this.A.Y && this.A.Y <= Math.Max(side.A.Y, side.B.Y)
-                && Math.Min(this.A.X, this.B.X) < side.A.X && side.A.X < Math.Max(this.A.X, this.B.X);         
+            return side.Top <= this.Top && this.Bottom <= side.Bottom
+                && this.Left < side.A.X && side.A.X < this.Right;
         }
-        else
+        else if (side.A.Y == side.B.Y)
         {
             // side is horizontal
-            return Math.Min(side.A.X, side.B.X) <= this.A.X && this.A.X <= Math.Max(side.A.X, side.B.X)
-                && Math.Min(this.A.Y, this.B.Y) < side.A.Y && side.A.Y < Math.Max(this.A.Y, this.B.Y);
+            return side.Left <= this.Left && this.Right <= side.Right // actually "<=" is needed only in "this.Right <= side.Right", see todo above
+                && this.Top < side.A.Y && side.A.Y < this.Bottom;
         }
+        else
+            throw new Exception("incorrect side");
     }
 }
 
