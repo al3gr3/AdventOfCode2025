@@ -26,8 +26,9 @@ public class Rectange
 
     public long Area() => (Math.Abs(A.X - B.X) + 1) * (Math.Abs(A.Y - B.Y) + 1);
 
-    public bool Contains(Point p) => Math.Min(A.X, B.X) < p.X && p.X < Math.Max(A.X, B.X)
-        && Math.Min(A.Y, B.Y) < p.Y && p.Y < Math.Max(A.Y, B.Y);
+    public bool Contains(Point p) => 
+        Math.Min(A.X, B.X) < p.X && p.X < Math.Max(A.X, B.X) &&
+        Math.Min(A.Y, B.Y) < p.Y && p.Y < Math.Max(A.Y, B.Y);
 
     internal bool Intersects(Rectange side)
     {
@@ -37,39 +38,15 @@ public class Rectange
         if (side.A.X == side.B.X)
         {
             // side is vertical
-            return Math.Min(side.A.Y, side.B.Y) < this.A.Y && this.A.Y < Math.Max(side.A.Y, side.B.Y)
+            return Math.Min(side.A.Y, side.B.Y) <= this.A.Y && this.A.Y <= Math.Max(side.A.Y, side.B.Y)
                 && Math.Min(this.A.X, this.B.X) < side.A.X && side.A.X < Math.Max(this.A.X, this.B.X);         
         }
         else
         {
             // side is horizontal
-            return Math.Min(side.A.X, side.B.X) < this.A.X && this.A.X < Math.Max(side.A.X, side.B.X)
+            return Math.Min(side.A.X, side.B.X) <= this.A.X && this.A.X <= Math.Max(side.A.X, side.B.X)
                 && Math.Min(this.A.Y, this.B.Y) < side.A.Y && side.A.Y < Math.Max(this.A.Y, this.B.Y);
         }
-    }
-
-    public List<Point> Greens()
-    {
-        var greens = new List<Point>();
-        if (A.X == B.X)
-        {
-            for (var y = Math.Min(A.Y, B.Y) + 1; y < Math.Max(A.Y, B.Y); y++)
-                greens.Add(new Point
-                {
-                    X = A.X,
-                    Y = y,
-                });
-        }
-        else
-        {
-            for (var x = Math.Min(A.X, B.X) + 1; x < Math.Max(A.X, B.X); x++)
-                greens.Add(new Point
-                {
-                    X = x,
-                    Y = A.Y,
-                });
-        }
-        return greens;
     }
 }
 
