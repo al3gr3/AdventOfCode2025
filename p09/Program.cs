@@ -7,6 +7,18 @@ Console.WriteLine(rectangles.First().Area());
 reds.Add(reds.First());
 var sides = reds.Zip(reds.Skip(1)).Select(z => new Rectange { A = z.First, B = z.Second }).ToList();
 
+// todo: also have to raycast and make sure the inside of the rect is green,
+// otherwise I give incorrect result 32 for this input:
+/*
+7,1
+11,1
+11,8
+9,8
+9,5
+2,5
+2,3
+7,3
+*/
 Console.WriteLine(rectangles.First(rect => !sides.Any(side => rect.Intersects(side))).Area());
 
 IEnumerable<Rectange> GetAllRectangles()
