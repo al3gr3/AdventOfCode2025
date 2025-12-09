@@ -1,8 +1,8 @@
 ﻿var reds = File.ReadAllLines("TextFile1.txt").Select(Point.Parse).ToList();
 
-var rectangles = GetAllRectangles().ToList();
+var rectangles = GetAllRectangles().OrderByDescending(x => x.Area()).ToList();
 
-Console.WriteLine(rectangles.Select(x => x.Area()).Max());
+Console.WriteLine(rectangles.First().Area());
 
 var greens = new List<Point>();
 var previous = reds.Last();
@@ -31,20 +31,7 @@ foreach(var red in reds)
     previous = red;
 }
 
-var result = 0L;
-var count = 0;
-foreach(var rect in rectangles)
-{
-    count++;
-    if (rect.Area() <= result)
-        continue;
-
-    if (greens.Any(green => rect.Contains(green)))
-        continue;
-
-    result = rect.Area();
-}
-Console.WriteLine(result);
+Console.WriteLine(rectangles.First(rect => !greens.Any(green => rect.Contains(green))).Area());
 
 IEnumerable<Rectange> GetAllRectangles()
 {
