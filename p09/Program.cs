@@ -4,34 +4,10 @@ var rectangles = GetAllRectangles().OrderByDescending(x => x.Area()).ToList();
 
 Console.WriteLine(rectangles.First().Area());
 
-var greens = new List<Point>();
-var previous = reds.Last();
-foreach(var red in reds)
-{
-    if (previous.X == red.X)
-    {
-        for (var y = Math.Min(previous.Y, red.Y) + 1; y < Math.Max(previous.Y, red.Y); y++)
-            greens.Add(new Point
-            {
-                X = red.X,
-                Y = y,
-                IsGreen = true,
-            });
-    }
-    else
-    {
-        for (var x = Math.Min(previous.X, red.X) + 1; x < Math.Max(previous.X, red.X); x++)
-            greens.Add(new Point
-            {
-                X = x,
-                Y = red.Y,
-                IsGreen = true,
-            });
-    }
-    previous = red;
-}
+reds.Add(reds.First());
+var sides = reds.Zip(reds.Skip(1)).Select(z => new Rectange { A = z.First, B = z.Second }).ToList();
 
-Console.WriteLine(rectangles.First(rect => !greens.Any(green => rect.Contains(green))).Area());
+Console.WriteLine(rectangles.First(rect => !sides.Any(side => rect.Intersects(side))).Area());
 
 IEnumerable<Rectange> GetAllRectangles()
 {
@@ -52,12 +28,54 @@ public class Rectange
 
     public bool Contains(Point p) => Math.Min(A.X, B.X) < p.X && p.X < Math.Max(A.X, B.X)
         && Math.Min(A.Y, B.Y) < p.Y && p.Y < Math.Max(A.Y, B.Y);
+
+    internal bool Intersects(Rectange side)
+    {
+        if (this.Contains(side.A) || this.Contains(side.B))
+            return true;
+
+        if (side.A.X == side.B.X)
+        {
+            // side is vertical
+            return Math.Min(side.A.Y, side.B.Y) < this.A.Y && this.A.Y < Math.Max(side.A.Y, side.B.Y)
+                && Math.Min(this.A.X, this.B.X) < side.A.X && side.A.X < Math.Max(this.A.X, this.B.X);         
+        }
+        else
+        {
+            // side is horizontal
+            return Math.Min(side.A.X, side.B.X) < this.A.X && this.A.X < Math.Max(side.A.X, side.B.X)
+                && Math.Min(this.A.Y, this.B.Y) < side.A.Y && side.A.Y < Math.Max(this.A.Y, this.B.Y);
+        }
+    }
+
+    public List<Point> Greens()
+    {
+        var greens = new List<Point>();
+        if (A.X == B.X)
+        {
+            for (var y = Math.Min(A.Y, B.Y) + 1; y < Math.Max(A.Y, B.Y); y++)
+                greens.Add(new Point
+                {
+                    X = A.X,
+                    Y = y,
+                });
+        }
+        else
+        {
+            for (var x = Math.Min(A.X, B.X) + 1; x < Math.Max(A.X, B.X); x++)
+                greens.Add(new Point
+                {
+                    X = x,
+                    Y = A.Y,
+                });
+        }
+        return greens;
+    }
 }
 
 public class Point
 {
     public long X, Y;
-    public bool IsGreen;
 
     internal static Point Parse(string arg1)
     {
