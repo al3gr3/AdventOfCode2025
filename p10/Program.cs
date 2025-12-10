@@ -16,9 +16,7 @@ Console.WriteLine(lines.Sum(SolveB));
 long SolveB(string line)
 {
     var (_, switches, joltage) = Parse(line);
-    var result = R2(switches
-        //.OrderByDescending(x => x.Length).ToList()
-        , joltage.ToList(), new Dictionary<string, long>());
+    var result = R2(switches, joltage.ToList(), new Dictionary<string, long>());
     Console.WriteLine(result);
     return result;
 }
@@ -37,18 +35,27 @@ long R2(List<int[]> switches, List<int> joltage, Dictionary<string, long> cache)
     var result = 1000000L;
     var minSwitches = switches.Where(x => x.Contains(index)).ToList();
 
-    var combs = AllCombs(min, minSwitches.Count());
-    foreach (var comb in combs)
-    {
-        var newJoltage = joltage.ToList();
+    var combs = AllCombs(min, minSwitches.Count);
 
-        comb.Zip(minSwitches).ToList().ForEach(z => newJoltage = Apply(z.Second, newJoltage, z.First * -1));
-        if (newJoltage.Any(x => x < 0))
+    var newJoltages = combs.Select(comb => ApplyAll(joltage, minSwitches, comb))
+        .Where(newJoltage => !newJoltage.Any(x => x < 0))
+        .ToList();
+
+    foreach (var newJoltage in newJoltages.OrderBy(x => x.Sum()))
+    {
+        if (result < newJoltage.Max() + min)
             continue;
         var next = R2(switches.Except(minSwitches).ToList(), newJoltage, cache);
         result = Math.Min(result, next + min);
     }
     return cache[key] = result;
+}
+
+List<int> ApplyAll(List<int> joltage, List<int[]> minSwitches, List<int> comb)
+{
+    var newJoltage = joltage.ToList();
+    comb.Zip(minSwitches).ToList().ForEach(z => newJoltage = Apply(z.Second, newJoltage, z.First * -1));
+    return newJoltage;
 }
 
 List<List<int>> AllCombs(int number, int count)
@@ -57,6 +64,7 @@ List<List<int>> AllCombs(int number, int count)
 
     if (allcombsCache.ContainsKey(key))
         return allcombsCache[key];
+
     if (count == 0)
         return new List<List<int>>();
     if (count == 1)
@@ -65,13 +73,12 @@ List<List<int>> AllCombs(int number, int count)
     var result = new List<List<int>>();
     for (var i = 0; i <= number; i++)
     {
-        var next = AllCombs(number - i, count - 1);
+        var next = AllCombs(number - i, count - 1).Select(x => x.ToList()).ToList(); // hardcopy
         foreach (var n in next)
             n.Add(i);
         result.AddRange(next);
     }
-    //allcombsCache[key] = result;
-    return result;
+    return allcombsCache[key] = result;
 }
 
 List<int> Apply(int[] sw, List<int> joltage, int diff)
