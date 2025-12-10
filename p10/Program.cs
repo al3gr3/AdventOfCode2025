@@ -16,7 +16,34 @@ Console.WriteLine(lines.Sum(SolveB));
 long SolveB(string line)
 {
     var (_, switches, joltage) = Parse(line);
-    return 0;
+    var result = R1(switches, joltage.ToList());
+    Console.WriteLine(result);
+    return result;
+}
+
+long R1(List<int[]> switches, List<int> joltage)
+{
+    if (joltage.All(x => x == 0))
+        return 0;
+
+    var min = joltage.Where(x => x > 0).Min();
+    var index = joltage.IndexOf(min);
+    var result = 1000000L;
+    foreach(var sw in switches.Where(x => x.Contains(index)))
+    {
+        var newJoltage = Apply(sw, joltage);
+        if (newJoltage.All(x => x >= 0))
+            result = Math.Min(result, R1(switches, newJoltage) + 1);
+    }
+    return result;
+}
+
+List<int> Apply(int[] sw, List<int> joltage)
+{
+    var result = joltage.ToList(); // hardcopy?
+    foreach (var i in sw)
+        result[i]--;
+    return result;
 }
 
 long SolveA(string line)
