@@ -16,7 +16,10 @@ var lines = File.ReadAllLines("TextFile1.txt");
 }
 
 var allcombsCache = new Dictionary<string, List<List<int>>>();
-Console.WriteLine(lines.Sum(SolveB));
+
+Console.WriteLine(lines.Sum(SolveA));
+Console.WriteLine(lines.Sum(SolveAZ3));
+Console.WriteLine(lines.Sum(SolveBZ3));
 
 (string, List<int[]>, int[]) Parse(string line)
 {
@@ -28,15 +31,14 @@ Console.WriteLine(lines.Sum(SolveB));
     return (splits[0], switches, joltage);
 }
 
-long SolveB(string line)
+long SolveBZ3(string line)
 {
     var (_, switches, joltage) = Parse(line);
-    var result = R3(switches, joltage);
-    Console.WriteLine(result);
+    var result = BZ3(switches, joltage);
     return result;
 }
 
-long R3(List<int[]> switches, int[] joltage)
+long BZ3(List<int[]> switches, int[] joltage)
 {
     using var ctx = new Context();
     using var opt = ctx.MkOptimize();
@@ -52,6 +54,49 @@ long R3(List<int[]> switches, int[] joltage)
         var affecting = presses.Where((_, j) => switches[j].Contains(i)).ToArray();
         var sum = ctx.MkAdd(affecting);
         opt.Add(ctx.MkEq(sum, ctx.MkInt(joltage[i])));
+    }
+
+    opt.MkMinimize(ctx.MkAdd(presses));
+
+    opt.Check();
+    var model = opt.Model;
+
+    return presses.Sum(p => ((IntNum)model.Evaluate(p, true)).Int64);
+}
+
+long SolveAZ3(string line)
+{
+    var (state, switches, _) = Parse(line);
+
+    var result = AZ3(state, switches);
+    return result;
+}
+
+long AZ3(string startState, List<int[]> switches)
+{
+    using var ctx = new Context();
+    using var opt = ctx.MkOptimize();
+    var presses = Enumerable.Range(0, switches.Count)
+        .Select(i => ctx.MkIntConst($"p{i}"))
+        .ToArray();
+
+    foreach (var press in presses)
+    {
+        opt.Add(ctx.MkGe(press, ctx.MkInt(0)));
+        opt.Add(ctx.MkLe(press, ctx.MkInt(1)));
+    }
+
+    for (int i = 0; i < startState.Length; i++)
+    {
+        var affecting = presses.Where((_, j) => switches[j].Contains(i)).ToArray();
+        var sum = ctx.MkAdd(affecting);
+
+        var or = ctx.MkOr(Enumerable.Range(0, startState.Length / 2).Select(i => ctx.MkEq(sum, ctx.MkInt(2 * i))).ToArray());
+
+        if (startState[i] == '#')
+            opt.Add(ctx.MkNot(or));
+        else
+            opt.Add(or);
     }
 
     opt.MkMinimize(ctx.MkAdd(presses));
