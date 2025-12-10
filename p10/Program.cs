@@ -1,6 +1,6 @@
 ﻿var lines = File.ReadAllLines("TextFile1.txt");
 
-Console.WriteLine(lines.Sum(SolveA));
+var allcombsCache = new Dictionary<string, List<List<int>>>();
 Console.WriteLine(lines.Sum(SolveB));
 
 (string, List<int[]>, int[]) Parse(string line)
@@ -16,14 +16,14 @@ Console.WriteLine(lines.Sum(SolveB));
 long SolveB(string line)
 {
     var (_, switches, joltage) = Parse(line);
-    var result = R1(switches
-        .OrderByDescending(x => x.Length).ToList()
+    var result = R2(switches
+        //.OrderByDescending(x => x.Length).ToList()
         , joltage.ToList(), new Dictionary<string, long>());
     Console.WriteLine(result);
     return result;
 }
 
-long R1(List<int[]> switches, List<int> joltage, Dictionary<string, long> cache)
+long R2(List<int[]> switches, List<int> joltage, Dictionary<string, long> cache)
 {
     var key = string.Join("|", joltage.Select(x => x.ToString()));
     if (cache.ContainsKey(key))
@@ -35,34 +35,42 @@ long R1(List<int[]> switches, List<int> joltage, Dictionary<string, long> cache)
     var min = joltage.Where(x => x > 0).Min();
     var index = joltage.IndexOf(min);
     var result = 1000000L;
-    foreach (var sw in switches.Where(x => x.Contains(index)))
+    var minSwitches = switches.Where(x => x.Contains(index)).ToList();
+
+    var combs = AllCombs(min, minSwitches.Count());
+    foreach (var comb in combs)
     {
         var newJoltage = joltage.ToList();
 
-        var count = 0;
-        while (newJoltage.All(x => x >= 0))
-        {
-            count++;
-            newJoltage = Apply(sw, newJoltage, -1);
-        }
-
-        while (count > 1)
-        {
-            newJoltage = Apply(sw, newJoltage, +1);
-            count--;
-            if (result < newJoltage.Max() + count)
-                continue; // wont get better
-            var next = R1(switches.Where(x => x != sw).ToList(), newJoltage, cache);
-          
-            result = Math.Min(result, next + count);
-            if (result < 1000000L)
-                break;
-        }
-        if (result < 1000000L)
-            break;
-
+        comb.Zip(minSwitches).ToList().ForEach(z => newJoltage = Apply(z.Second, newJoltage, z.First * -1));
+        if (newJoltage.Any(x => x < 0))
+            continue;
+        var next = R2(switches.Except(minSwitches).ToList(), newJoltage, cache);
+        result = Math.Min(result, next + min);
     }
-    cache[key] = result;
+    return cache[key] = result;
+}
+
+List<List<int>> AllCombs(int number, int count)
+{
+    var key = $"{number}|{count}";
+
+    if (allcombsCache.ContainsKey(key))
+        return allcombsCache[key];
+    if (count == 0)
+        return new List<List<int>>();
+    if (count == 1)
+        return new[] { new[] { number }.ToList() }.ToList();
+
+    var result = new List<List<int>>();
+    for (var i = 0; i <= number; i++)
+    {
+        var next = AllCombs(number - i, count - 1);
+        foreach (var n in next)
+            n.Add(i);
+        result.AddRange(next);
+    }
+    //allcombsCache[key] = result;
     return result;
 }
 
