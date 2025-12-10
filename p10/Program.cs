@@ -1,4 +1,19 @@
-﻿var lines = File.ReadAllLines("TextFile1.txt");
+﻿using Microsoft.Z3;
+
+var lines = File.ReadAllLines("TextFile1.txt");
+
+(int number, List<int[]>) NewMethod(List<int[]> switches, List<int> joltage)
+{
+    //var number = joltage.Where(x => x > 0).Min();
+    //var index = joltage.IndexOf(number);
+
+    var index = Enumerable.Range(0, joltage.Count)
+        .Where(i => switches.Count(x => x.Contains(i)) > 0)
+        .OrderBy(i => switches.Count(x => x.Contains(i))).First();
+
+    var minSwitches = switches.Where(x => x.Contains(index)).ToList();
+    return (index, minSwitches);
+}
 
 var allcombsCache = new Dictionary<string, List<List<int>>>();
 Console.WriteLine(lines.Sum(SolveB));
@@ -16,9 +31,35 @@ Console.WriteLine(lines.Sum(SolveB));
 long SolveB(string line)
 {
     var (_, switches, joltage) = Parse(line);
-    var result = R2(switches, joltage.ToList(), new Dictionary<string, long>());
+    var result = R3(switches, joltage);
     Console.WriteLine(result);
     return result;
+}
+
+long R3(List<int[]> switches, int[] joltage)
+{
+    using var ctx = new Context();
+    using var opt = ctx.MkOptimize();
+    var presses = Enumerable.Range(0, switches.Count)
+        .Select(i => ctx.MkIntConst($"p{i}"))
+        .ToArray();
+
+    foreach (var press in presses)
+        opt.Add(ctx.MkGe(press, ctx.MkInt(0)));
+
+    for (int i = 0; i < joltage.Length; i++)
+    {
+        var affecting = presses.Where((_, j) => switches[j].Contains(i)).ToArray();
+        var sum = ctx.MkAdd(affecting);
+        opt.Add(ctx.MkEq(sum, ctx.MkInt(joltage[i])));
+    }
+
+    opt.MkMinimize(ctx.MkAdd(presses));
+
+    opt.Check();
+    var model = opt.Model;
+
+    return presses.Sum(p => ((IntNum)model.Evaluate(p, true)).Int64);
 }
 
 long R2(List<int[]> switches, List<int> joltage, Dictionary<string, long> cache)
@@ -29,24 +70,26 @@ long R2(List<int[]> switches, List<int> joltage, Dictionary<string, long> cache)
 
     if (joltage.All(x => x == 0))
         return 0;
+    if (!switches.Any())
+        return 1000000L;
 
-    var min = joltage.Where(x => x > 0).Min();
-    var index = joltage.IndexOf(min);
-    var result = 1000000L;
-    var minSwitches = switches.Where(x => x.Contains(index)).ToList();
+    var (index, minSwitches) = NewMethod(switches, joltage);
+    var number = joltage[index];
 
-    var combs = AllCombs(min, minSwitches.Count);
+    var combs = AllCombs(number, minSwitches.Count);
 
     var newJoltages = combs.Select(comb => ApplyAll(joltage, minSwitches, comb))
         .Where(newJoltage => !newJoltage.Any(x => x < 0))
         .ToList();
-
-    foreach (var newJoltage in newJoltages.OrderBy(x => x.Sum()))
+    var result = 1000000L;
+    foreach (var newJoltage in newJoltages
+        //.OrderBy(x => x.Sum())
+        )
     {
-        if (result < newJoltage.Max() + min)
+        if (result < newJoltage.Max() + number)
             continue;
         var next = R2(switches.Except(minSwitches).ToList(), newJoltage, cache);
-        result = Math.Min(result, next + min);
+        result = Math.Min(result, next + number);
     }
     return cache[key] = result;
 }
