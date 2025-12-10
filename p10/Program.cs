@@ -16,7 +16,9 @@ Console.WriteLine(lines.Sum(SolveB));
 long SolveB(string line)
 {
     var (_, switches, joltage) = Parse(line);
-    var result = R1(switches, joltage.ToList(), new Dictionary<string, long>());
+    var result = R1(switches
+        .OrderByDescending(x => x.Length).ToList()
+        , joltage.ToList(), new Dictionary<string, long>());
     Console.WriteLine(result);
     return result;
 }
@@ -48,11 +50,19 @@ long R1(List<int[]> switches, List<int> joltage, Dictionary<string, long> cache)
         {
             newJoltage = Apply(sw, newJoltage, +1);
             count--;
-            var next = R1(switches, newJoltage, cache);
-            cache[string.Join("|", newJoltage.Select(x => x.ToString()))] = next;
+            if (result < newJoltage.Max() + count)
+                continue; // wont get better
+            var next = R1(switches.Where(x => x != sw).ToList(), newJoltage, cache);
+          
             result = Math.Min(result, next + count);
+            if (result < 1000000L)
+                break;
         }
+        if (result < 1000000L)
+            break;
+
     }
+    cache[key] = result;
     return result;
 }
 
