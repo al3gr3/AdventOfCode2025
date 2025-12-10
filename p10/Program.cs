@@ -1,17 +1,29 @@
-﻿
-
-var lines = File.ReadAllLines("TextFile1.txt");
+﻿var lines = File.ReadAllLines("TextFile1.txt");
 
 Console.WriteLine(lines.Sum(SolveA));
+Console.WriteLine(lines.Sum(SolveB));
+
+(string, List<int[]>, int[]) Parse(string line)
+{
+    var splits = line.Split(['[', ']', ' ', '(', ')', '{', '}'], StringSplitOptions.RemoveEmptyEntries);
+    var all = splits.Skip(1).Select(sw => sw.Split(',').Select(int.Parse).ToArray()).ToArray();
+    var switches = all[0..(all.Length - 1)].ToList();
+    var joltage = all.Last();
+
+    return (splits[0], switches, joltage);
+}
+
+long SolveB(string line)
+{
+    var (_, switches, joltage) = Parse(line);
+    return 0;
+}
 
 long SolveA(string line)
 {
-    var splits = line.Split(['[', ']', ' ', '(', ')'], StringSplitOptions.RemoveEmptyEntries);
-    var state = splits[0];
+    var (state, switches, _) = Parse(line);
 
-    var switches = splits[1..(splits.Length - 1)].Select(sw => sw.Split(',').Select(int.Parse).ToArray()).ToList();
-
-    var startState = new string(Enumerable.Range(0, state.Length).Select(i => '.').ToArray());
+    var startState = new string(state.Select(i => '.').ToArray());
     var result =  R(startState, switches, 0, state);
     return result;
 }
