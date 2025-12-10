@@ -16,33 +16,51 @@ Console.WriteLine(lines.Sum(SolveB));
 long SolveB(string line)
 {
     var (_, switches, joltage) = Parse(line);
-    var result = R1(switches, joltage.ToList());
+    var result = R1(switches, joltage.ToList(), new Dictionary<string, long>());
     Console.WriteLine(result);
     return result;
 }
 
-long R1(List<int[]> switches, List<int> joltage)
+long R1(List<int[]> switches, List<int> joltage, Dictionary<string, long> cache)
 {
+    var key = string.Join("|", joltage.Select(x => x.ToString()));
+    if (cache.ContainsKey(key))
+        return cache[key];
+
     if (joltage.All(x => x == 0))
         return 0;
 
     var min = joltage.Where(x => x > 0).Min();
     var index = joltage.IndexOf(min);
     var result = 1000000L;
-    foreach(var sw in switches.Where(x => x.Contains(index)))
+    foreach (var sw in switches.Where(x => x.Contains(index)))
     {
-        var newJoltage = Apply(sw, joltage);
-        if (newJoltage.All(x => x >= 0))
-            result = Math.Min(result, R1(switches, newJoltage) + 1);
+        var newJoltage = joltage.ToList();
+
+        var count = 0;
+        while (newJoltage.All(x => x >= 0))
+        {
+            count++;
+            newJoltage = Apply(sw, newJoltage, -1);
+        }
+
+        while (count > 1)
+        {
+            newJoltage = Apply(sw, newJoltage, +1);
+            count--;
+            var next = R1(switches, newJoltage, cache);
+            cache[string.Join("|", newJoltage.Select(x => x.ToString()))] = next;
+            result = Math.Min(result, next + count);
+        }
     }
     return result;
 }
 
-List<int> Apply(int[] sw, List<int> joltage)
+List<int> Apply(int[] sw, List<int> joltage, int diff)
 {
     var result = joltage.ToList(); // hardcopy?
     foreach (var i in sw)
-        result[i]--;
+        result[i] += diff;
     return result;
 }
 
