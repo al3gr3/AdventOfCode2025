@@ -1,8 +1,8 @@
-﻿var devices = File.ReadAllLines("TextFile1.txt").Select(Device.Parse).ToList();
-var allTos = devices.SelectMany(x => x.Devices).ToList();
-foreach(var to in allTos)
-    if (!devices.Any(x => x.Name == to))
-        devices.Add(new Device { Name = to });
+﻿var ds = File.ReadAllLines("TextFile1.txt").Select(Device.Parse).ToDictionary(x => x.Name, x => x);
+var allTos = ds.Values.SelectMany(x => x.Devices).ToList();
+foreach (var to in allTos)
+    if (!ds.ContainsKey(to))
+        ds[to] = new Device { Name = to };
 
 var cache = new Dictionary<string, long>();
 Console.WriteLine(SolveA("you", "out"));
@@ -27,32 +27,14 @@ long SolveA(string from, string to)
     return R(from, to);
 }
 
-long R(string from, string to)
-{
-    var res = 0L;
-
-    foreach (var next in devices.First(x => x.Name == from).Devices)
-    {
-        if (next == to)
-            res++;
-        else
-        {
-            if (cache.ContainsKey(next))
-                res += cache[next];
-            else
-                res += R(next, to);
-        }
-    }
-
-    return cache[from] = res;
-}
+long R(string from, string to) => from == to
+    ? 1L
+    : cache[from] = ds[from].Devices.Sum(next => cache.ContainsKey(next) ? cache[next] : R(next, to));
 
 class Device
 {
     public string Name;
     public List<string> Devices = new List<string>();
-
-    public long Count = 0;
 
     public static Device Parse(string s)
     {
