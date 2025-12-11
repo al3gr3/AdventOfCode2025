@@ -29,7 +29,7 @@ long SolveA(string from, string to)
 
 long R(string from, string to) => from == to
     ? 1L
-    : cache[from] = ds[from].Devices.Sum(next => cache.ContainsKey(next) ? cache[next] : R(next, to));
+    : cache[from] = ds[from].Devices.Sum(next => cache.TryGetValue(next, out long value) ? value : R(next, to));
 
 class Device
 {
@@ -38,7 +38,7 @@ class Device
 
     public static Device Parse(string s)
     {
-        var splits = s.Split(new[] { ' ', ':' }, StringSplitOptions.RemoveEmptyEntries);
+        var splits = s.Split([' ', ':'], StringSplitOptions.RemoveEmptyEntries);
         return new Device
         {
             Name = splits[0],
