@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "p10", "p10\p10.csproj", "{1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "p11", "p11\p11.csproj", "{CD5FD39D-F27A-48C5-AB97-50E37E73D2A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "p12", "p12\p12.csproj", "{4DEA515D-82B7-41D7-990B-1E6C3ADD0482}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,8 @@ Global
 		{12F5963F-57FA-4F1F-829D-B6591714A71F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD5FD39D-F27A-48C5-AB97-50E37E73D2A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CD5FD39D-F27A-48C5-AB97-50E37E73D2A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DEA515D-82B7-41D7-990B-1E6C3ADD0482}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DEA515D-82B7-41D7-990B-1E6C3ADD0482}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
